@@ -11,14 +11,30 @@ from vm.config import VBOXMANAGE_PATH
 
 
 def get_vboxmanage_bin() -> str:
-    """Localiza o binário do VBoxManage no sistema."""
-    if os.path.exists(VBOXMANAGE_PATH):
-        return VBOXMANAGE_PATH
+    """Localiza o binário do VBoxManage de forma agnóstica de sistema operacional."""
+    # 1. Verifica no PATH do sistema operacional (Linux, macOS, Windows com PATH configurado)
     found = shutil.which("VBoxManage") or shutil.which("VBoxManage.exe")
     if found:
         return found
+
+    # 2. Verifica se foi definido expressamente por variável de ambiente
+    if VBOXMANAGE_PATH and os.path.exists(VBOXMANAGE_PATH):
+        return VBOXMANAGE_PATH
+
+    # 3. Caminhos padrão conhecidos por SO
+    common_locations = [
+        r"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe",
+        r"C:\Program Files (x86)\Oracle\VirtualBox\VBoxManage.exe",
+        "/usr/bin/VBoxManage",
+        "/usr/local/bin/VBoxManage",
+    ]
+    for loc in common_locations:
+        if os.path.exists(loc):
+            return loc
+
     raise FileNotFoundError(
-        f"VBoxManage não encontrado em '{VBOXMANAGE_PATH}' nem no PATH do sistema."
+        "VBoxManage não encontrado no PATH nem nos diretórios padrão do VirtualBox. "
+        "Defina a variável de ambiente VBOXMANAGE_PATH com o caminho do executável."
     )
 
 

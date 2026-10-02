@@ -6,6 +6,7 @@ import socket
 import subprocess
 import time
 import os
+import shutil
 from typing import Dict, Any, Tuple
 from vm.config import (
     DEFAULT_VM_HOST,
@@ -44,15 +45,20 @@ def get_ssh_base_command(
     key_path: str = DEFAULT_SSH_KEY_PATH,
 ) -> list:
     """
-    Monta a linha base segura do cliente OpenSSH nativo do Windows.
-    - Sem invocação de shell Windows (cmd.exe/powershell).
+    Monta a linha base segura do cliente OpenSSH de forma agnóstica de sistema operacional.
+    - Sem invocação de shell intermediário (evita injeção de comandos).
     - Opções para não travar com prompts de confirmação interativa.
     """
-    ssh_bin = "ssh"
-    # Localiza o OpenSSH nativo do Windows se possível
-    win_ssh = r"C:\Windows\System32\OpenSSH\ssh.exe"
-    if os.path.exists(win_ssh):
-        ssh_bin = win_ssh
+    # 1. Procura 'ssh' no PATH (Linux, macOS e Windows com OpenSSH no PATH)
+    ssh_bin = shutil.which("ssh") or shutil.which("ssh.exe")
+
+    # 2. Fallback padrão do OpenSSH nativo do Windows
+    if not ssh_bin:
+        win_ssh = r"C:\Windows\System32\OpenSSH\ssh.exe"
+        if os.path.exists(win_ssh):
+            ssh_bin = win_ssh
+        else:
+            ssh_bin = "ssh"
 
     cmd = [
         ssh_bin,
