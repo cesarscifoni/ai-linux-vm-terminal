@@ -46,7 +46,7 @@ TOOLS = {
             "properties": {
                 "vm_name": {
                     "type": "string",
-                    "description": "Nome da máquina virtual no VirtualBox (ex: 'Ubuntu-Lab', 'clienteIPS'). Se omitido, usa a padrão configurada."
+                    "description": "Nome da máquina virtual no VirtualBox (ex: 'Ubuntu-Lab', 'Debian-Server'). Se omitido, usa a padrão configurada."
                 }
             }
         }
@@ -58,7 +58,7 @@ TOOLS = {
             "properties": {
                 "vm_name": {
                     "type": "string",
-                    "description": "Nome da máquina virtual no VirtualBox (ex: 'Ubuntu-Lab', 'clienteIPS')."
+                    "description": "Nome da máquina virtual no VirtualBox (ex: 'Ubuntu-Lab', 'Debian-Server')."
                 },
                 "host": {
                     "type": "string",
