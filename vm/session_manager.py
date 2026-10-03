@@ -123,19 +123,27 @@ class PersistentSSHSession:
             start_marker = f"__AGY_START_{token}__"
             end_marker = f"__AGY_END_{token}__"
 
+            # Normaliza o comando para quebras de linha Unix (\n)
+            clean_command = command.replace("\r\n", "\n").replace("\r", "\n").strip()
+
             # Script encapsulador para executar o comando e imprimir sentinelas
             # Formato do sentinela final: __AGY_END_token__:EXIT_CODE:CURRENT_DIR
             wrapper = (
                 f"echo '{start_marker}'\n"
-                f"{command}\n"
+                f"{clean_command}\n"
                 f"__agy_ec=$?\n"
                 f"echo '{end_marker}':$__agy_ec:\"$(pwd)\"\n"
             )
 
             start_time = time.time()
             try:
-                self.process.stdin.write(wrapper)
-                self.process.stdin.flush()
+                # Usa .buffer.write para garantir quebras de linha Unix (\n puras) sem tradução automática de CRLF do Windows
+                if hasattr(self.process.stdin, "buffer"):
+                    self.process.stdin.buffer.write(wrapper.encode("utf-8"))
+                    self.process.stdin.buffer.flush()
+                else:
+                    self.process.stdin.write(wrapper)
+                    self.process.stdin.flush()
             except Exception as e:
                 self.close()
                 return {
